@@ -32,8 +32,10 @@ def main():
         for i in f:
             data.append(i.replace('\n', '').split(';'))
 
-    print data[::3,:]
-    #data = np.loadtxt('facebook.csv', delimiter = ';')
+
+    print data[:3]
+    print np.shape(data)
+    data = np.loadtxt('facebook.csv', delimiter = ';')
 
     trainSet = data[:250]
     testSet = data[250:375]
