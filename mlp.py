@@ -64,7 +64,7 @@ class mlp:
             self.outputs = self.mlpfwd(inputs)
 
             error = 0.5*np.sum((self.outputs-targets)**2)
-            if (np.mod(n,100)==0):
+            if (np.mod(n,1000)==0):
                 print "Iteration: ",n, " Error: ",error
 
             # Different types of output neurons
