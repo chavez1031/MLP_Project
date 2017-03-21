@@ -41,8 +41,8 @@ def main():
     validSet = data[375:500,0:18]
     validTarget = data[375:500]
 
-    net = mlp.mlp(trainSet, trainTarget, 10, outtype = 'linear')
-    net.earlystopping(trainSet, trainTarget, validSet, validTarget, 0.4)
+    net = mlp.mlp(trainSet, trainTarget, 30, outtype = 'linear')
+    net.earlystopping(trainSet, trainTarget, validSet, validTarget, 0.25)
     net.confmat(testSet,testTarget)
 
 
