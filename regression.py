@@ -27,24 +27,23 @@ def preprocessFacebook(fileIn, fileOut):
 
 def main():
     preprocessFacebook('dataset_Facebook.csv', 'facebook.csv')
-
-    data = []
-    with open('facebook.csv', 'r') as f:
-        for i in f:
-            data.append(i.replace('\n', '').split(';'))
-
-    print np.shape(data)
     data = np.loadtxt('facebook.csv', delimiter = ';')
 
-    trainSet = data[:250]
-    testSet = data[250:375]
-    validSet = data[375:500]
+    data[:,2:] = data[:,2:]-data[:,2:].mean(axis = 0)
+    imax = np.concatenate((data.max(axis=0) * np.ones((1,19)), np.abs(data.min(axis=0)) * np.ones((1,19))), axis=0).max(axis=0)
+    data[:,2:] = data[:,2:]/imax[2:]
+    data[:,:1] = data[:,:1]-data[:,:1].mean(axis = 0)
+    data[:,:1] = data[:,:1]/imax[:1]
+    trainSet = data[:250,0:18]
+    trainTarget = data[:250]
+    testSet = data[251:374,0:18]
+    testTarget = data[251:374]
+    validSet = data[375:500,0:18]
+    validTarget = data[375:500]
 
-    print np.shape(trainSet[:,0:18])
-    print np.shape(trainSet[:,18:19])
-    net = mlp.mlp(trainSet[:,:18], trainSet[:,18:19], 4, outtype = 'linear')
-
-    net.mlptrain(trainSet, trainSet, 0.25, 500)
+    net = mlp.mlp(trainSet, trainTarget, 10, outtype = 'linear')
+    net.earlystopping(trainSet, trainTarget, validSet, validTarget, 0.4)
+    net.confmat(testSet,testTarget)
 
 
 
