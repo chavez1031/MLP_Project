@@ -1,6 +1,6 @@
 import mlp
 import numpy as np
-#import pylab as pl
+import pylab as pl
 import sys
 
 def preprocessFacebook(fileIn, fileOut):
@@ -26,27 +26,31 @@ def preprocessFacebook(fileIn, fileOut):
 
 
 def main():
+
     preprocessFacebook('dataset_Facebook.csv', 'facebook.csv')
     data = np.loadtxt('facebook.csv', delimiter = ';')
+    data = data-data.mean(axis = 0)
+    imax = np.concatenate((data.max(axis=0)*np.ones((1,19)),np.abs(data.min(axis=0)*np.ones((1,19)))),axis=0).max(axis=0)
+    data = data/imax
 
-    data[:,2:] = data[:,2:]-data[:,2:].mean(axis = 0)
-    imax = np.concatenate((data.max(axis=0) * np.ones((1,19)), np.abs(data.min(axis=0)) * np.ones((1,19))), axis=0).max(axis=0)
-    data[:,2:] = data[:,2:]/imax[2:]
-    data[:,:1] = data[:,:1]-data[:,:1].mean(axis = 0)
-    data[:,:1] = data[:,:1]/imax[:1]
-    trainSet = data[:250,0:18]
-    trainTarget = data[:250]
-    testSet = data[251:374,0:18]
-    testTarget = data[251:374]
-    validSet = data[375:500,0:18]
-    validTarget = data[375:500]
+    train = data[::2,:]
+    trainTarget = data[::2,18].reshape((np.shape(train)[0]),1)
+    valid = data[1::4,:]
+    validTarget = data[1::4,18].reshape((np.shape(valid)[0]),1)
+    test = data[3::4,:]
+    testTarget = data[3::4,18].reshape((np.shape(test)[0]),1)
 
-    net = mlp.mlp(trainSet, trainTarget, 30, outtype = 'linear')
-    net.earlystopping(trainSet, trainTarget, validSet, validTarget, 0.4, 5000)
-    net.confmat(testSet,testTarget)
+    net = mlp.mlp(train, trainTarget, 30, outtype = 'linear')
+    net.earlystopping(train, trainTarget, valid, validTarget, 0.4, 500)
 
+    test = np.concatenate((test,-np.ones((np.shape(test)[0],1))),axis=1)
+    testout = net.mlpfwd(test)
 
-
+    pl.figure()
+    pl.plot(np.arange(np.shape(test)[0]),testout,'.')
+    pl.plot(np.arange(np.shape(test)[0]),testTarget,'x')
+    pl.legend(('Predictions','Targets'))
+    pl.show()
 
 if __name__ == '__main__':
     main()
